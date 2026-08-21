@@ -1265,10 +1265,12 @@ function refreshDashboard() {
 
     if (isProjectSubmitted(project)) {
         solutionBox.classList.add('visible');
+      solutionBox.classList.remove('protected-solution');
         solutionOutput.textContent = project.solution;
         statusMessage.textContent = 'Nice work — the solution is unlocked.';
     } else {
         solutionBox.classList.remove('visible');
+      solutionBox.classList.remove('protected-solution');
         solutionOutput.textContent = '';
         statusMessage.textContent = 'Submit your code to earn XP and get reviewed.';
     }
@@ -1380,6 +1382,7 @@ function awardHtmlXp(project) {
         }
         applyTaskOutcome(true);
         solutionBox.classList.add('visible');
+        solutionBox.classList.remove('protected-solution');
         solutionOutput.textContent = project.solution;
         return true;
     }
@@ -1388,6 +1391,7 @@ function awardHtmlXp(project) {
     state.bestScore = user.bestScore;
     applyTaskOutcome(false);
     solutionBox.classList.add('visible');
+    solutionBox.classList.add('protected-solution');
     solutionOutput.innerHTML = buildProtectedCodeMarkup(project.solution);
     statusMessage.textContent = `Wrong code submitted. The solution is protected and cannot be copied or captured. ${statusMessage.textContent}`;
 
@@ -1413,6 +1417,7 @@ function revealHtmlSolution() {
     }
 
     solutionBox.classList.add('visible');
+    solutionBox.classList.remove('protected-solution');
     solutionOutput.textContent = project.solution;
     statusMessage.textContent = 'Solution revealed for review.';
 }
@@ -2271,6 +2276,49 @@ codeInput.addEventListener('input', () => {
 cssCodeInput.addEventListener('input', () => {
     renderProjectPreview(getCurrentProject());
     renderCssPreview(cssChallenges[currentCssIndex % cssChallenges.length]);
+});
+
+function isProtectedSolutionVisible() {
+  return solutionBox.classList.contains('protected-solution');
+}
+
+function isProtectedSolutionEvent(event) {
+  return isProtectedSolutionVisible() && event.target instanceof Element && event.target.closest('#solutionBox');
+}
+
+document.addEventListener('contextmenu', (event) => {
+  if (isProtectedSolutionEvent(event)) {
+    event.preventDefault();
+  }
+});
+
+document.addEventListener('copy', (event) => {
+  if (isProtectedSolutionEvent(event)) {
+    event.preventDefault();
+  }
+});
+
+document.addEventListener('cut', (event) => {
+  if (isProtectedSolutionEvent(event)) {
+    event.preventDefault();
+  }
+});
+
+document.addEventListener('dragstart', (event) => {
+  if (isProtectedSolutionEvent(event)) {
+    event.preventDefault();
+  }
+});
+
+document.addEventListener('keydown', (event) => {
+  if (!isProtectedSolutionEvent(event)) {
+    return;
+  }
+
+  const key = event.key.toLowerCase();
+  if ((event.ctrlKey || event.metaKey) && ['c', 's', 'u', 'p'].includes(key)) {
+    event.preventDefault();
+  }
 });
 
 document.querySelectorAll('.nav-btn').forEach((button) => {

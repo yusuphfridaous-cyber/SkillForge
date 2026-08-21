@@ -458,6 +458,11 @@ button:active {
   pointer-events: none;
 }
 
+.protected-solution {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 .obscured-solution img {
   display: block;
   width: 100%;

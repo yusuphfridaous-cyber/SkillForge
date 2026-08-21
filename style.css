@@ -190,15 +190,9 @@ h1 {
 }
 
 .google-icon {
-  display: inline-grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #ea4335, #fbbc05, #34a853, #4285f4);
-  color: white;
-  font-weight: 800;
-  font-size: 0.8rem;
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
 }
 
 .full-width {
@@ -417,7 +411,9 @@ button:active {
 #projectPreview,
 #cssPreviewFrame {
   width: 100%;
+  height: 360px;
   min-height: 260px;
+  display: block;
   border: 1px solid var(--line);
   border-radius: 12px;
   background: white;
@@ -509,6 +505,12 @@ button:active {
   flex-direction: column;
 }
 
+.css-preview-panel {
+  position: sticky;
+  top: 20px;
+  align-self: start;
+}
+
 .code-submission {
   margin-top: 20px;
   display: flex;
@@ -597,6 +599,16 @@ button:active {
   font-size: 1.6rem;
 }
 
+.profile-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.profile-actions button {
+  min-width: 120px;
+}
+
 .hidden {
   display: none !important;
 }
@@ -616,5 +628,74 @@ button:active {
 
   .nav-links {
     width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .css-preview-panel {
+    position: static;
+  }
+
+  .nav-btn {
+    width: 100%;
+  }
+
+  .actions button {
+    flex: 1 1 220px;
+  }
+}
+
+@media (max-width: 520px) {
+  .container,
+  .auth-shell {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  header,
+  .project-panel,
+  .side-panel,
+  .css-panel,
+  .profile-card,
+  .auth-card {
+    padding: 18px;
+    border-radius: 14px;
+  }
+
+  header {
+    align-items: stretch;
+  }
+
+  .status-pill {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .nav-links {
+    gap: 6px;
+  }
+
+  .nav-btn,
+  .tab-btn {
+    padding: 9px 8px;
+    font-size: 0.88rem;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .actions button,
+  .profile-actions button {
+    width: 100%;
+    flex-basis: auto;
+  }
+
+  .profile-meta {
+    align-items: flex-start;
+  }
+
+  .profile-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

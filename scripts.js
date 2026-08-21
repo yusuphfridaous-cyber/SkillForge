@@ -739,7 +739,7 @@ function generateProjectForLevel(levelIndex, taskSeed) {
     const sectionNames = ['About', 'Features', 'Highlights', 'Services', 'Results', 'Reviews'];
     const primarySection = sectionNames[(seed + level) % sectionNames.length];
     const secondarySection = sectionNames[(seed + 2 + level) % sectionNames.length];
-    const taskCount = (level + 1) * 200;
+    const taskCount = Math.min(15, 6 + level * 2);
 
     const tasks = [
         `Use a clear page title and a strong introductory headline.`,
@@ -1041,7 +1041,9 @@ const profileCssTasks = document.getElementById('profileCssTasks');
 const profileBestScore = document.getElementById('profileBestScore');
 
 function loadHtmlProgress() {
-    const savedState = localStorage.getItem(HTML_PROGRESS_KEY);
+  const userKey = localStorage.getItem(CURRENT_USER_KEY);
+  const scopedKey = `${HTML_PROGRESS_KEY}:${(userKey || 'guest').toLowerCase()}`;
+  const savedState = localStorage.getItem(scopedKey) || localStorage.getItem(HTML_PROGRESS_KEY);
     return savedState ? JSON.parse(savedState) : null;
 }
 
@@ -1055,7 +1057,9 @@ function saveUsers() {
 }
 
 function saveHtmlProgress() {
-    localStorage.setItem(HTML_PROGRESS_KEY, JSON.stringify(state));
+  const userKey = localStorage.getItem(CURRENT_USER_KEY);
+  const scopedKey = `${HTML_PROGRESS_KEY}:${(userKey || 'guest').toLowerCase()}`;
+  localStorage.setItem(scopedKey, JSON.stringify(state));
 }
 
 function normalizeUser(account) {
@@ -1068,7 +1072,10 @@ function normalizeUser(account) {
         cssTests: Number(account.cssTests) || 0,
         bestScore: Number(account.bestScore) || 0,
         cssBestScore: Number(account.cssBestScore) || 0,
-        failedStreak: Number(account.failedStreak) || 0
+        failedStreak: Number(account.failedStreak) || 0,
+        cssSubmittedChallengeIds: Array.isArray(account.cssSubmittedChallengeIds)
+          ? account.cssSubmittedChallengeIds
+          : []
     };
 }
 
@@ -1079,6 +1086,7 @@ function getCurrentUser() {
 
 function setCurrentUser(email) {
     localStorage.setItem(CURRENT_USER_KEY, email);
+  Object.assign(state, normalizeHtmlProgress(loadHtmlProgress()));
 }
 
 function getLevelFromXp(totalXp) {
@@ -1163,26 +1171,63 @@ function getPerformanceScore(submittedCode, project) {
     }
 
     const requiredChecks = [
-        /<h1|<h2/i,
-        /<p/i,
-        /<ul|<ol/i,
-        /<a\s+href=/i,
-        /<img|<form|<nav|<header|<main|<footer|<section/i
-    ];
+      { pattern: /<h1|<h2|<h3/i, weight: 15 },
+      { pattern: /<p/i, weight: 10 },
+      { pattern: /<ul|<ol/i, weight: 10 },
+      { pattern: /<a\s+href=/i, weight: 10 },
+      { pattern: /<img/i, weight: 10 },
+      { pattern: /<form|<input|<button/i, weight: 10 },
+      { pattern: /<nav/i, weight: 10 },
+      { pattern: /<header|<main|<footer|<section/i, weight: 15 },
+      { pattern: /id="[a-z0-9-]+"/i, weight: 10 }
+    ].filter(({ pattern }) => pattern.test(solutionText));
 
-    let matches = 0;
-    requiredChecks.forEach((pattern) => {
-        if (pattern.test(cleanCode)) {
-            matches += 1;
-        }
-    });
-
+    const earnedWeight = requiredChecks.reduce((total, check) => {
+      return total + (check.pattern.test(cleanCode) ? check.weight : 0);
+    }, 0);
+    const availableWeight = requiredChecks.reduce((total, check) => total + check.weight, 0) || 1;
+    const structureScore = (earnedWeight / availableWeight) * 100;
     const similarity = Math.min((cleanCode.length / Math.max(solutionText.length, 1)) * 100, 100);
-    const structureScore = (matches / requiredChecks.length) * 100;
-    const performance = Math.round((similarity * 0.45) + (structureScore * 0.55));
+    const performance = Math.round((similarity * 0.25) + (structureScore * 0.75));
 
     return Math.max(0, Math.min(100, performance));
 }
+
+  function buildCombinedPreviewMarkup(htmlMarkup, cssMarkup) {
+    const fallbackMarkup = '<p>Preview content is unavailable.</p>';
+    const markup = (htmlMarkup || '').trim() || fallbackMarkup;
+    const styleMarkup = cssMarkup ? `<style>${cssMarkup}</style>` : '';
+
+    if (/<\/head>/i.test(markup)) {
+      return markup.replace(/<\/head>/i, `${styleMarkup}</head>`);
+    }
+
+    if (/<body(?:\s[^>]*)?>/i.test(markup)) {
+      return markup.replace(/(<body(?:\s[^>]*)?>)/i, `$1${styleMarkup}`);
+    }
+
+    return `<!DOCTYPE html><html lang="en"><head>${styleMarkup}</head><body>${markup}</body></html>`;
+  }
+
+  function setPreviewMarkup(previewFrame, htmlMarkup, cssMarkup) {
+    if (!previewFrame) {
+      return;
+    }
+
+    previewFrame.removeAttribute('src');
+    previewFrame.setAttribute('srcdoc', buildCombinedPreviewMarkup(htmlMarkup, cssMarkup));
+  }
+
+  function renderProjectPreview(project) {
+    const projectMarkup = codeInput.value.trim() || (project && project.solution) || '';
+    setPreviewMarkup(projectPreview, projectMarkup, cssCodeInput.value.trim());
+  }
+
+  function renderCssPreview(challenge) {
+    const htmlMarkup = codeInput.value.trim() || challenge.preview;
+    const cssMarkup = cssCodeInput.value.trim() || challenge.solution;
+    setPreviewMarkup(cssPreviewFrame, htmlMarkup, cssMarkup);
+  }
 
 function refreshDashboard() {
     const user = getCurrentUser();
@@ -1197,7 +1242,7 @@ function refreshDashboard() {
     const levelName = levelNames[currentLevel];
     projectTitle.textContent = project.title;
     projectDescription.textContent = project.description;
-    projectPreview.srcdoc = project.solution;
+    renderProjectPreview(project);
     startChallengeTimer(project, htmlTimer, htmlComplexity, project.title.includes('AI'), 'html');
 
     taskList.innerHTML = '';
@@ -1295,7 +1340,7 @@ function applyTaskOutcome(isSuccess) {
     }
 
     if (user.xp < LEVEL_STEP_XP && previousLevel !== 0) {
-        statusMessage.textContent += ' Level stays locked until 100 XP is reached.';
+        statusMessage.textContent += ` Level stays locked until ${LEVEL_STEP_XP} XP is reached.`;
     }
 
     saveUsers();
@@ -1310,13 +1355,18 @@ function awardHtmlXp(project) {
         if (!user) {
             statusMessage.textContent = 'Login first to submit your code.';
         }
-        return;
+    return false;
     }
 
     const submittedCode = codeInput.value.trim();
     if (!submittedCode) {
         statusMessage.textContent = 'Paste your HTML first, then submit it for review.';
-        return;
+    return false;
+    }
+
+    if (htmlSecondsRemaining <= 0) {
+      statusMessage.textContent = 'Time is up. Start a new challenge before submitting again.';
+    return false;
     }
 
     const score = getPerformanceScore(submittedCode, project);
@@ -1331,7 +1381,7 @@ function awardHtmlXp(project) {
         applyTaskOutcome(true);
         solutionBox.classList.add('visible');
         solutionOutput.textContent = project.solution;
-        return;
+        return true;
     }
 
     user.bestScore = Math.max(user.bestScore || 0, score);
@@ -1346,7 +1396,15 @@ function awardHtmlXp(project) {
             event.preventDefault();
         }
     }, { once: true });
+    return true;
 }
+
+  function openCssStylingStep() {
+    showView('cssView');
+    renderCssChallenge();
+    cssStatusMessage.textContent = 'HTML submitted. Style that page with CSS before starting a new HTML test.';
+    cssCodeInput.focus();
+  }
 
 function revealHtmlSolution() {
     const project = getCurrentProject();
@@ -1368,6 +1426,8 @@ function advanceProject() {
     }
 
     state.currentProjectIndex = (state.currentProjectIndex + 1) % levelProjects.length;
+    codeInput.value = '';
+    cssCodeInput.value = '';
     solutionBox.classList.remove('visible');
     solutionOutput.textContent = '';
     statusMessage.textContent = 'A new challenge is ready.';
@@ -1414,7 +1474,7 @@ function renderCssChallenge() {
         item.textContent = task;
         cssTaskList.appendChild(item);
     });
-    cssPreviewFrame.srcdoc = `<!DOCTYPE html><html><body>${challenge.preview}</body><style>${cssCodeInput.value || challenge.solution}</style></html>`;
+    renderCssPreview(challenge);
     cssSolutionBox.classList.remove('visible');
     cssSolutionOutput.textContent = '';
     cssStatusMessage.textContent = 'Build a clean card layout using CSS.';
@@ -1431,6 +1491,11 @@ function evaluateCssSubmission() {
     if (!cssCode) {
         cssStatusMessage.textContent = 'Write some CSS before submitting the test.';
         return;
+    }
+
+    if (cssSecondsRemaining <= 0) {
+      cssStatusMessage.textContent = 'Time is up. Start a new CSS challenge before submitting again.';
+      return;
     }
 
     const challenge = cssChallenges[currentCssIndex % cssChallenges.length];
@@ -1455,13 +1520,20 @@ function evaluateCssSubmission() {
     const similarityBonus = normalized.includes('card') || normalized.includes('pricing') || normalized.includes('hero') ? 10 : 0;
     const finalScore = Math.min(100, Math.round(score + similarityBonus));
     const xpAward = Math.round((finalScore / 100) * 140) + 30;
+    const challengeId = challenge.id || challenge.title;
+    const alreadySubmitted = user.cssSubmittedChallengeIds.includes(challengeId);
 
-    user.xp = (user.xp || 0) + xpAward;
-    user.cssTests = (user.cssTests || 0) + 1;
+    if (!alreadySubmitted) {
+      user.xp = (user.xp || 0) + xpAward;
+      user.cssTests = (user.cssTests || 0) + 1;
+      user.cssSubmittedChallengeIds.push(challengeId);
+    }
     user.cssBestScore = Math.max(user.cssBestScore || 0, finalScore);
     user.bestScore = Math.max(user.bestScore || 0, finalScore);
 
-    cssStatusMessage.textContent = `CSS review: ${finalScore}% accuracy. +${xpAward} XP awarded.`;
+    cssStatusMessage.textContent = alreadySubmitted
+      ? `CSS review: ${finalScore}% accuracy. This challenge was already rewarded.`
+      : `CSS review: ${finalScore}% accuracy. +${xpAward} XP awarded.`;
     cssSolutionBox.classList.add('visible');
     cssSolutionOutput.textContent = challenge.solution;
     saveUsers();
@@ -1478,6 +1550,7 @@ function revealCssSolution() {
 
 function nextCssChallenge() {
     currentCssIndex += 1;
+  codeInput.value = '';
     cssCodeInput.value = '';
     renderCssChallenge();
 }
@@ -2151,6 +2224,8 @@ document.getElementById('aiGenerateBtn').addEventListener('click', () => {
     const levelProjects = getLevelProjects(currentLevel);
     levelProjects.unshift(newAiProject);
     state.currentProjectIndex = 0;
+    codeInput.value = '';
+    cssCodeInput.value = '';
 
     solutionBox.classList.remove('visible');
     solutionOutput.textContent = '';
@@ -2159,7 +2234,10 @@ document.getElementById('aiGenerateBtn').addEventListener('click', () => {
 });
 
 document.getElementById('submitProjectBtn').addEventListener('click', () => {
-    awardHtmlXp(getCurrentProject());
+  const wasSubmitted = awardHtmlXp(getCurrentProject());
+  if (wasSubmitted) {
+    openCssStylingStep();
+  }
 });
 document.getElementById('openHtmlInVsCodeBtn').addEventListener('click', () => {
   openTaskInVsCode(getCurrentProject(), 'html');
@@ -2173,6 +2251,7 @@ document.getElementById('aiGenerateCssBtn').addEventListener('click', () => {
     const newAiChallenge = generateAiCssChallenge(currentLevel);
     cssChallenges.unshift(newAiChallenge);
     currentCssIndex = 0;
+    codeInput.value = '';
     cssCodeInput.value = '';
     renderCssChallenge();
     cssStatusMessage.textContent = '✨ New AI CSS Challenge generated!';
@@ -2184,10 +2263,20 @@ document.getElementById('openCssInVsCodeBtn').addEventListener('click', () => {
   openTaskInVsCode({ ...challenge, level: getCssChallengeLevel(challenge, currentCssIndex % cssChallenges.length) }, 'css');
 });
 
+codeInput.addEventListener('input', () => {
+    renderProjectPreview(getCurrentProject());
+    renderCssPreview(cssChallenges[currentCssIndex % cssChallenges.length]);
+});
+
+cssCodeInput.addEventListener('input', () => {
+    renderProjectPreview(getCurrentProject());
+    renderCssPreview(cssChallenges[currentCssIndex % cssChallenges.length]);
+});
+
 document.querySelectorAll('.nav-btn').forEach((button) => {
     button.addEventListener('click', () => {
         const user = getCurrentUser();
-        if (!user && button.dataset.view !== 'authView') {
+    if (!user && button.dataset.view === 'profileView') {
             showView('authView');
             return;
         }

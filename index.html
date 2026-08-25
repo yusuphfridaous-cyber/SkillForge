@@ -10,17 +10,20 @@
      crossorigin="anonymous"></script>
 </head>
 
-<body>
+<body data-page="dashboard">
     <div class="page-shell">
         <nav class="topbar">
+            <a class="brand" href="index.html" aria-label="SkillForge home">
             <a class="brand" href="#" aria-label="SkillForge home">
                 <img src="skillforge-logo.svg" alt="" class="brand-logo" />
                 <span>SkillForge</span>
             </a>
             <div class="nav-links">
-                <button class="nav-btn active" data-view="dashboardView">Dashboard</button>
-                <button class="nav-btn" data-view="cssView">CSS Test</button>
-                <button class="nav-btn" data-view="profileView">Profile</button>
+                <a class="nav-btn active" data-page="index.html" href="index.html">Dashboard</a>
+                <a class="nav-btn" data-page="css.html" href="css.html">CSS Test</a>
+                <a class="nav-btn" data-page="about.html" href="about.html">About</a>
+                <a class="nav-btn" data-page="profile.html" href="profile.html">Profile</a>
+                <a class="nav-btn" data-page="auth.html" href="auth.html">Login / Sign up</a>
             </div>
         </nav>
 

@@ -55,6 +55,8 @@ textarea {
 }
 
 .brand-logo {
+  width: 36px;
+  height: 36px;
   width: 42px;
   height: 42px;
   filter: drop-shadow(0 0 8px rgba(25, 245, 230, 0.35));

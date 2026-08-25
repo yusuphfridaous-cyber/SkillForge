@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profile | SkillForge Academy</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="page-shell">
+        <nav class="topbar">
+            <a class="brand" href="index.html" aria-label="SkillForge home">
+                <img src="skillforge-logo.svg" alt="" class="brand-logo" />
+                <span>SkillForge</span>
+            </a>
+            <div class="nav-links">
+                <a class="nav-btn" data-page="index.html" href="index.html">Dashboard</a>
+                <a class="nav-btn" data-page="css.html" href="css.html">CSS Test</a>
+                <a class="nav-btn" data-page="about.html" href="about.html">About</a>
+                <a class="nav-btn active" data-page="profile.html" href="profile.html">Profile</a>
+                <a class="nav-btn" data-page="auth.html" href="auth.html">Login / Sign up</a>
+            </div>
+        </nav>
+        <section id="profileView" class="app-view">
+            <div class="container small-container">
+                <header>
+                    <h1>Profile</h1>
+                    <div class="status-pill" id="profileLevelBadge">Level 1 - Beginner</div>
+                </header>
+                <div class="profile-card">
+                    <div class="profile-meta">
+                        <div class="avatar">U</div>
+                        <div>
+                            <h2 id="profileName">Student</h2>
+                            <p id="profileEmail">student@example.com</p>
+                        </div>
+                    </div>
+                    <div class="profile-grid">
+                        <div class="mini-card"><span>XP</span><strong id="profileXp">0 XP</strong></div>
+                        <div class="mini-card"><span>HTML Tasks</span><strong id="profileHtmlTasks">0</strong></div>
+                        <div class="mini-card"><span>CSS Tests</span><strong id="profileCssTasks">0</strong></div>
+                        <div class="mini-card"><span>Best Score</span><strong id="profileBestScore">0%</strong></div>
+                    </div>
+                    <div class="profile-actions">
+                        <button class="secondary-btn" id="logoutBtn">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script src="scripts.js?v=20260821-2"></script>
+</body>
+</html>

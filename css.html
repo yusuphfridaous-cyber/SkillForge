@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CSS Test | SkillForge Academy</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="page-shell">
+        <nav class="topbar">
+            <a class="brand" href="index.html" aria-label="SkillForge home">
+                <img src="skillforge-logo.svg" alt="" class="brand-logo" />
+                <span>SkillForge</span>
+            </a>
+            <div class="nav-links">
+                <a class="nav-btn" data-page="index.html" href="index.html">Dashboard</a>
+                <a class="nav-btn active" data-page="css.html" href="css.html">CSS Test</a>
+                <a class="nav-btn" data-page="about.html" href="about.html">About</a>
+                <a class="nav-btn" data-page="profile.html" href="profile.html">Profile</a>
+                <a class="nav-btn" data-page="auth.html" href="auth.html">Login / Sign up</a>
+            </div>
+        </nav>
+        <section id="cssView" class="app-view">
+            <div class="container small-container">
+                <header>
+                    <h1>CSS Test</h1>
+                    <div class="status-pill">Style challenge</div>
+                </header>
+                <div class="css-panel">
+                    <div class="css-copy">
+                        <div class="level-badge" id="cssLevelBadge">CSS Beginner</div>
+                        <h2 id="cssChallengeTitle">Loading CSS challenge...</h2>
+                        <p id="cssChallengeDescription"></p>
+                        <div class="challenge-meta">
+                            <div class="timer" id="cssTimer" aria-live="polite">Time: --:--</div>
+                            <span class="complexity-label" id="cssComplexity">Complexity: Beginner</span>
+                        </div>
+                        <ul id="cssTaskList"></ul>
+                        <div class="actions compact-actions">
+                            <button class="primary-btn" id="newCssBtn">New CSS challenge</button>
+                            <button class="primary-btn" id="aiGenerateCssBtn">AI Generate CSS Challenge</button>
+                            <button class="secondary-btn" id="openCssInVsCodeBtn">Open project in VS Code</button>
+                            <button class="success-btn" id="submitCssBtn">Submit CSS test</button>
+                            <button class="secondary-btn" id="revealCssBtn">Show solution</button>
+                        </div>
+                        <div class="code-submission">
+                            <label for="cssCodeInput">Your CSS code</label>
+                            <textarea id="cssCodeInput" rows="12" spellcheck="false" placeholder="Write your CSS here..."></textarea>
+                        </div>
+                        <div class="solution-box" id="cssSolutionBox">
+                            <h4>CSS Solution</h4>
+                            <pre id="cssSolutionOutput"></pre>
+                        </div>
+                    </div>
+                    <div class="css-preview-panel">
+                        <h3>Live Preview</h3>
+                        <iframe id="cssPreviewFrame" title="CSS preview" sandbox="allow-scripts"></iframe>
+                        <p class="status-message" id="cssStatusMessage">Build a clean card layout using CSS.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script src="scripts.js?v=20260821-2"></script>
+</body>
+</html>

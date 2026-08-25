@@ -1119,7 +1119,7 @@ function getLevelFromXp(totalXp) {
 
 function updateProfileUI() {
     const user = getCurrentUser();
-    if (!user) {
+  if (!user || !profileLevelBadge || !profileName || !profileEmail || !profileXp || !profileHtmlTasks || !profileCssTasks || !profileBestScore) {
         return;
     }
 
@@ -1138,7 +1138,9 @@ function updateProfileUI() {
 function showView(viewName) {
     const allViews = [authView, dashboardView, cssView, profileView];
     allViews.forEach((view) => {
-        view.classList.add('hidden');
+    if (view) {
+      view.classList.add('hidden');
+    }
     });
 
     const target = {
@@ -1157,8 +1159,14 @@ function showView(viewName) {
         button.classList.toggle('active', button.dataset.view === viewName);
     });
 
-    logoutBtn.classList.toggle('hidden', !getCurrentUser());
+    if (logoutBtn) {
+      logoutBtn.classList.toggle('hidden', !getCurrentUser());
+    }
 }
+
+  function navigateToPage(page) {
+    window.location.href = page;
+  }
 
 function getCurrentLevelIndex() {
     const user = getCurrentUser();
@@ -1171,6 +1179,10 @@ function isProjectSubmitted(project) {
 }
 
 function renderRoadmap() {
+  if (!levelList) {
+    return;
+  }
+
     levelList.innerHTML = '';
     levelNames.forEach((levelName, index) => {
         const item = document.createElement('li');
@@ -1601,7 +1613,7 @@ function loginUser(event) {
     }
 
     setCurrentUser(user.email);
-    showView('dashboardView');
+    navigateToPage('index.html');
     refreshDashboard();
     updateProfileUI();
     loginForm.reset();
@@ -1639,7 +1651,7 @@ function registerUser(event) {
     users.push(newUser);
     saveUsers();
     setCurrentUser(newUser.email);
-    showView('dashboardView');
+    navigateToPage('index.html');
     updateProfileUI();
     refreshDashboard();
     registerForm.reset();
@@ -1650,7 +1662,7 @@ function logoutUser() {
         firebaseAuth.signOut().catch(() => { });
     }
     localStorage.removeItem(CURRENT_USER_KEY);
-    showView('authView');
+    navigateToPage('auth.html');
 }
 
 function handleGoogleSignIn() {
@@ -1686,7 +1698,7 @@ function handleGoogleSignIn() {
 
             saveUsers();
             setCurrentUser(profile.email);
-            showView('dashboardView');
+            navigateToPage('index.html');
             refreshDashboard();
             updateProfileUI();
             loginForm.reset();
@@ -2259,8 +2271,20 @@ body {
     return cssTopics[Math.floor(Math.random() * cssTopics.length)];
 }
 
-document.getElementById('nextProjectBtn').addEventListener('click', advanceProject);
-document.getElementById('aiGenerateBtn').addEventListener('click', () => {
+const nextProjectBtn = document.getElementById('nextProjectBtn');
+const aiGenerateBtn = document.getElementById('aiGenerateBtn');
+const submitProjectBtn = document.getElementById('submitProjectBtn');
+const openHtmlInVsCodeBtn = document.getElementById('openHtmlInVsCodeBtn');
+const revealSolutionBtn = document.getElementById('revealSolutionBtn');
+const resetBtn = document.getElementById('resetBtn');
+const newCssBtn = document.getElementById('newCssBtn');
+const aiGenerateCssBtn = document.getElementById('aiGenerateCssBtn');
+const submitCssBtn = document.getElementById('submitCssBtn');
+const revealCssBtn = document.getElementById('revealCssBtn');
+const openCssInVsCodeBtn = document.getElementById('openCssInVsCodeBtn');
+
+nextProjectBtn?.addEventListener('click', advanceProject);
+aiGenerateBtn?.addEventListener('click', () => {
     const currentLevel = getCurrentLevelIndex();
     const newAiProject = generateAiTaskForLevel(currentLevel);
 
@@ -2276,20 +2300,20 @@ document.getElementById('aiGenerateBtn').addEventListener('click', () => {
     refreshDashboard();
 });
 
-document.getElementById('submitProjectBtn').addEventListener('click', () => {
+submitProjectBtn?.addEventListener('click', () => {
   const wasSubmitted = awardHtmlXp(getCurrentProject());
   if (wasSubmitted) {
     openCssStylingStep();
   }
 });
-document.getElementById('openHtmlInVsCodeBtn').addEventListener('click', () => {
+openHtmlInVsCodeBtn?.addEventListener('click', () => {
   openTaskInVsCode(getCurrentProject(), 'html');
 });
-document.getElementById('revealSolutionBtn').addEventListener('click', revealHtmlSolution);
-document.getElementById('resetBtn').addEventListener('click', resetProgress);
+revealSolutionBtn?.addEventListener('click', revealHtmlSolution);
+resetBtn?.addEventListener('click', resetProgress);
 
-document.getElementById('newCssBtn').addEventListener('click', nextCssChallenge);
-document.getElementById('aiGenerateCssBtn').addEventListener('click', () => {
+newCssBtn?.addEventListener('click', nextCssChallenge);
+aiGenerateCssBtn?.addEventListener('click', () => {
     const currentLevel = getCurrentLevelIndex();
     const newAiChallenge = generateAiCssChallenge(currentLevel);
     cssChallenges.unshift(newAiChallenge);
@@ -2299,25 +2323,25 @@ document.getElementById('aiGenerateCssBtn').addEventListener('click', () => {
     renderCssChallenge();
     cssStatusMessage.textContent = '✨ New AI CSS Challenge generated!';
 });
-document.getElementById('submitCssBtn').addEventListener('click', evaluateCssSubmission);
-document.getElementById('revealCssBtn').addEventListener('click', revealCssSolution);
-document.getElementById('openCssInVsCodeBtn').addEventListener('click', () => {
+submitCssBtn?.addEventListener('click', evaluateCssSubmission);
+revealCssBtn?.addEventListener('click', revealCssSolution);
+openCssInVsCodeBtn?.addEventListener('click', () => {
   const challenge = cssChallenges[currentCssIndex % cssChallenges.length];
   openTaskInVsCode({ ...challenge, level: getCssChallengeLevel(challenge, currentCssIndex % cssChallenges.length) }, 'css');
 });
 
-codeInput.addEventListener('input', () => {
+codeInput?.addEventListener('input', () => {
     renderProjectPreview(getCurrentProject());
     renderCssPreview(cssChallenges[currentCssIndex % cssChallenges.length]);
 });
 
-cssCodeInput.addEventListener('input', () => {
+cssCodeInput?.addEventListener('input', () => {
     renderProjectPreview(getCurrentProject());
     renderCssPreview(cssChallenges[currentCssIndex % cssChallenges.length]);
 });
 
 function isProtectedSolutionVisible() {
-  return solutionBox.classList.contains('protected-solution');
+  return solutionBox?.classList.contains('protected-solution') || false;
 }
 
 function isProtectedSolutionEvent(event) {
@@ -2361,12 +2385,12 @@ document.addEventListener('keydown', (event) => {
 
 document.querySelectorAll('.nav-btn').forEach((button) => {
     button.addEventListener('click', () => {
-        const user = getCurrentUser();
-    if (!user && button.dataset.view === 'profileView') {
-            showView('authView');
+          const page = button.dataset.page;
+          if (page === 'profile.html' && !getCurrentUser()) {
+            navigateToPage('auth.html');
             return;
-        }
-        showView(button.dataset.view);
+          }
+          navigateToPage(page);
     });
 });
 
@@ -2374,24 +2398,32 @@ document.querySelectorAll('.tab-btn').forEach((button) => {
     button.addEventListener('click', handleAuthToggle);
 });
 
-loginForm.addEventListener('submit', loginUser);
-registerForm.addEventListener('submit', registerUser);
-logoutBtn.addEventListener('click', logoutUser);
-document.getElementById('googleLoginBtn').addEventListener('click', handleGoogleSignIn);
-document.getElementById('googleRegisterBtn').addEventListener('click', handleGoogleSignIn);
+loginForm?.addEventListener('submit', loginUser);
+registerForm?.addEventListener('submit', registerUser);
+logoutBtn?.addEventListener('click', logoutUser);
+document.getElementById('googleLoginBtn')?.addEventListener('click', handleGoogleSignIn);
+document.getElementById('googleRegisterBtn')?.addEventListener('click', handleGoogleSignIn);
 
 initFirebaseAuth();
-renderCssChallenge();
-refreshDashboard();
+if (cssView) {
+  renderCssChallenge();
+}
+if (dashboardView) {
+  refreshDashboard();
+}
 updateProfileUI();
 
 const savedUser = getCurrentUser();
-if (savedUser) {
-    showView('dashboardView');
-    updateProfileUI();
-    refreshDashboard();
-} else {
-    showView('dashboardView');
-    statusMessage.textContent = 'Preview ready. Log in to save progress and earn XP.';
-    refreshDashboard();
+const pageName = document.body.dataset.page || '';
+if (savedUser && authView && pageName === 'auth') {
+  navigateToPage('index.html');
+} else if (!savedUser && profileView && pageName !== 'auth') {
+  navigateToPage('auth.html');
+} else if (!savedUser && authView && pageName === 'auth') {
+  authView.classList.remove('hidden');
+} else if (dashboardView) {
+  showView('dashboardView');
+  if (!savedUser && statusMessage) {
+  statusMessage.textContent = 'Preview ready. Log in to save progress and earn XP.';
+  }
 }

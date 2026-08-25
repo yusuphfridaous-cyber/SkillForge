@@ -8,6 +8,7 @@ const XP_PER_SUCCESS = 50;
 const XP_PER_FAILURE = 25;
 const XP_FAIL_STREAK_PENALTY = 10;
 const xpThresholds = Array.from({ length: levelNames.length }, (_, index) => index * LEVEL_STEP_XP);
+const DEFAULT_WORKSPACE_PATH = 'C:/Users/USER/Desktop/SkillForge';
 
 const firebaseConfig = {
     apiKey: 'AIzaSyDt-OCQ2Tr4O4no1O_AmBzlVbFz9O3EwIU',
@@ -1026,9 +1027,19 @@ async function openTaskInVsCode(challenge, type) {
     statusMessage.textContent = 'VS Code is opening. Copy the task requirements from this page.';
   }
 
+  if (window.location.protocol !== 'file:') {
+    const workspacePath = new URLSearchParams(window.location.search).get('workspace') || DEFAULT_WORKSPACE_PATH;
+    const vscodeUri = `vscode://file/${encodeURI(workspacePath)}`;
+    statusMessage.textContent = 'Opening this project in VS Code...';
+    cssStatusMessage.textContent = 'Opening this project in VS Code...';
+    window.location.href = vscodeUri;
+    return;
+  }
+
   const filePath = decodeURIComponent(window.location.pathname);
   const folderPath = filePath.substring(0, filePath.lastIndexOf('/')) || filePath;
-  const vscodeUri = `vscode://folder${encodeURI(folderPath)}`;
+  const windowsFolderPath = folderPath.replace(/^\/(\w:)/, '$1');
+  const vscodeUri = `vscode://file/${encodeURI(windowsFolderPath)}`;
   window.location.href = vscodeUri;
 }
 

@@ -36,9 +36,16 @@ function initFirebaseAuth() {
         return;
     }
 
-    firebase.initializeApp(firebaseConfig);
-    firebaseAuth = firebase.auth();
-    firebaseReady = true;
+    try {
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        firebaseAuth = firebase.auth();
+        firebaseReady = true;
+    } catch (error) {
+        console.error('Firebase Auth initialization failed:', error);
+        return;
+    }
 
     firebaseAuth.onAuthStateChanged((user) => {
         if (!user) {
@@ -1686,6 +1693,26 @@ function handleGoogleSignIn() {
             registerForm.reset();
         })
         .catch((error) => {
+            const redirectFallbackCodes = [
+                'auth/popup-blocked',
+                'auth/popup-closed-by-user',
+                'auth/cancelled-popup-request',
+                'auth/operation-not-supported-in-this-environment'
+            ];
+
+            if (redirectFallbackCodes.includes(error.code)) {
+                statusMessage.textContent = 'Opening Google sign-in...';
+                firebaseAuth.signInWithRedirect(provider).catch((redirectError) => {
+                    statusMessage.textContent = `Google sign-in failed: ${redirectError.message}`;
+                });
+                return;
+            }
+
+            if (error.code === 'auth/unauthorized-domain') {
+                statusMessage.textContent = 'This deployed domain is not authorized in Firebase Authentication.';
+                return;
+            }
+
             statusMessage.textContent = `Google sign-in failed: ${error.message}`;
         });
 }

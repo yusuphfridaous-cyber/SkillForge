@@ -45,9 +45,18 @@ textarea {
 }
 
 .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   font-size: 1.6rem;
   font-weight: 800;
   color: var(--primary);
+  text-decoration: none;
+}
+
+.brand-logo {
+  width: 36px;
+  height: 36px;
 }
 
 .nav-links {

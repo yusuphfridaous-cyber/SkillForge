@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login or Sign up | SkillForge Academy</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body data-page="auth">
+    <div class="page-shell">
+        <nav class="topbar">
+            <a class="brand" href="index.html">SkillForge</a>
+            <div class="nav-links">
+                <a class="nav-btn" href="index.html">Dashboard</a>
+                <a class="nav-btn" href="css.html">CSS Test</a>
+                <a class="nav-btn" href="about.html">About</a>
+                <a class="nav-btn" href="profile.html">Profile</a>
+            </div>
+        </nav>
+        <section id="authView" class="auth-shell">
+            <div class="auth-card">
+                <div class="auth-tabs">
+                    <button class="tab-btn active" data-auth="login">Login</button>
+                    <button class="tab-btn" data-auth="register">Sign up</button>
+                </div>
+                <form id="loginForm" class="auth-form">
+                    <h2>Welcome back</h2>
+                    <label>Email<input type="email" id="loginEmail" placeholder="you@example.com" required /></label>
+                    <label>Password<input type="password" id="loginPassword" placeholder="Your password" required /></label>
+                    <button type="submit" class="primary-btn full-width">Login</button>
+                    <div class="oauth-divider"><span>or</span></div>
+                    <button type="button" class="google-btn full-width" id="googleLoginBtn">Continue with Google</button>
+                </form>
+                <form id="registerForm" class="auth-form hidden">
+                    <h2>Create account</h2>
+                    <label>Full name<input type="text" id="registerName" placeholder="Jane Doe" required /></label>
+                    <label>Email<input type="email" id="registerEmail" placeholder="you@example.com" required /></label>
+                    <label>Password<input type="password" id="registerPassword" placeholder="Create a password" required /></label>
+                    <button type="submit" class="success-btn full-width">Sign up</button>
+                    <div class="oauth-divider"><span>or</span></div>
+                    <button type="button" class="google-btn full-width" id="googleRegisterBtn">Sign up with Google</button>
+                </form>
+                <p class="status-message" id="statusMessage" aria-live="polite"></p>
+            </div>
+        </section>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
+    <script src="scripts.js?v=20260821-2"></script>
+</body>
+</html>
